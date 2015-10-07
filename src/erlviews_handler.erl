@@ -53,10 +53,12 @@
 init(Req, ViewBtrees) ->
     #{
       start_key := StartKey,
-      end_key := EndKey
+      end_key := EndKey,
+      limit := Limit
      } = cowboy_req:match_qs([
                               {start_key, nonempty, undefined},
-                              {end_key, nonempty, undefined}],
+                              {end_key, nonempty, undefined},
+                              {limit, int, 9999999999999}],
                              Req),
     FirstBtree = hd(ViewBtrees),
 
@@ -74,7 +76,6 @@ init(Req, ViewBtrees) ->
                          fold_fun(InnerFun, ExpandedKVs, Reds, WrapperAcc)
                  end,
 
-    Limit = 99999999999,
     SkipCount = 0,
     FoldAccInit = {Limit, SkipCount, undefined, []},
     Options = mapreduce_view:make_key_options(QueryArgs),
