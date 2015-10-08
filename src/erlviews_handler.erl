@@ -3,6 +3,7 @@
 -export([init/2]).
 
 -define(JSON_ENCODE(V), ejson:encode(V)).
+-define(JSON_DECODE(V), ejson:decode(V)).
 
 % From couch_db.hrl
 -record(view_fold_helper_funs, {
@@ -51,15 +52,18 @@
 
 
 init(Req, ViewBtrees) ->
+    JsonDecodeConstraint = fun(Value) -> {true, ?JSON_DECODE(Value)} end,
     #{
       start_key := StartKey,
       end_key := EndKey,
       limit := Limit
      } = cowboy_req:match_qs([
-                              {start_key, nonempty, undefined},
-                              {end_key, nonempty, undefined},
+                              {start_key, JsonDecodeConstraint, undefined},
+                              {end_key, JsonDecodeConstraint, undefined},
                               {limit, int, 9999999999999}],
                              Req),
+    io:format("start_key: ~p, end_key: ~p, limit: ~p~n",
+              [StartKey, EndKey, Limit]),
     FirstBtree = hd(ViewBtrees),
 
     CurrentEtag = <<"someetag">>,
