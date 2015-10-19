@@ -160,8 +160,8 @@ json_view_start_resp(Req, _Etag, TotalRowCount, _Offset, _Acc) ->
 
 send_json_view_row(Resp, {{{json, Key}, DocId}, {_PartId, {json, Value}}},
                    RowFront, _DebugMode) ->
-    JsonObj = <<"{\"id\":", DocId/binary,
-                ",\"key\":", Key/binary,
+    JsonObj = <<"{\"id\":\"", DocId/binary,
+                "\",\"key\":", Key/binary,
                 ",\"value\":", Value/binary, "}">>,
     cowboy_req:chunk(RowFront ++ JsonObj, Resp),
     {ok, ",\r\n"}.
