@@ -158,20 +158,13 @@ json_view_start_resp(Req, _Etag, TotalRowCount, _Offset, _Acc) ->
     BeginBody = io_lib:format("{\"total_rows\":~w,", [TotalRowCount]),
     {ok, Resp, [BeginBody, "\"rows\":[\r\n"]}.
 
-send_json_view_row(Resp, Kv, RowFront, DebugMode) ->
-    JsonObj = view_row_obj(Kv, DebugMode),
-    cowboy_req:chunk(RowFront ++ ?JSON_ENCODE(JsonObj), Resp),
+send_json_view_row(Resp, {{{json, Key}, DocId}, {_PartId, {json, Value}}},
+                   RowFront, _DebugMode) ->
+    JsonObj = <<"{\"id\":", DocId/binary,
+                ",\"key\":", Key/binary,
+                ",\"value\":", Value/binary, "}">>,
+    cowboy_req:chunk(RowFront ++ JsonObj, Resp),
     {ok, ",\r\n"}.
-
-
-% the view row has an error
-view_row_obj({{Key, error}, Value}, _DebugMode) ->
-    {[{<<"key">>, Key}, {<<"error">>, Value}]};
-view_row_obj({{Key, DocId}, {_PartId, Value}}, false) ->
-    {[{<<"id">>, DocId}, {<<"key">>, Key}, {<<"value">>, Value}]};
-view_row_obj({{Key, DocId}, {PartId, Value}}, true) ->
-    {[{<<"id">>, DocId}, {<<"key">>, Key}, {<<"partition">>, PartId}, {<<"value">>, Value}]}.
-
 
 
 finish_view_fold(Req, TotalRows, FoldResult) ->
