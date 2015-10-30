@@ -8,3 +8,6 @@ run:
 
 clean:
 	./rebar3 clean
+
+run-no-smp:
+	ERL_LIBS=_build/default/lib:/home/vmx/src/couchbase/master/install/lib/couchdb/erlang/lib erl -noshell -s erlviews -smp disable
